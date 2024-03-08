@@ -120,7 +120,7 @@ Using these definitions we can write (\ref{eq:weak_form_approx}) as a discrete a
 \begin{aligned}
 0 &= \sum_{i=0}^{M} \partial_t a_i(t) M_{ij} + \Big[ \hat{f}(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} - c \sum_{i=0}^{M} a_i(t) K_{ij} \\
 &= \bm{M} \cdot \partial_t \bm{a} + \bm{f} - c \bm{K} \cdot \bm{a} \\
-\implies \partial_t \bm{a} &= \bm{M}^{-1} \Big( c \bm{K} \cdot \bm{a} - \bm{f} \Big), \\
+\implies \partial_t \bm{a} &= \bm{M}^{-1} \cdot \Big( c \bm{K} \cdot \bm{a} - \bm{f} \Big), \\
 \end{aligned}
 \end{equation}
 which gives the time evolution of the coefficient vector $a_j(t) = \bm{a}$.
@@ -183,7 +183,17 @@ Hence the flux term is (here we will take $c > 0$):
 \begin{aligned}
 f_j &= \Big[ \hat{f}(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \\
 &= \hat{f}\big[ \tilde{q}(x_R) \big] \, \phi_j\big[ \xi(x_R) \big]  - \hat{f}\big[ \tilde{q}(x_L) \big] \, \phi_j\big[ \xi(x_L) \big] \\
-&= c \tilde{q}_{k}(x_R) \, \phi_j\big[ \xi(x_R) \big]  - c \tilde{q}_{k-1}(x_R) \, \phi_j\big[ \xi(x_L) \big]. \\
+&= c \tilde{q}_{k}(x_R) \, \phi_j\big[ \xi(x_R) \big]  - c \tilde{q}_{k-1}(x_R) \, \phi_j\big[ \xi(x_L) \big] \\
+&=
+\begin{pmatrix}
+c \tilde{q}_{k}(x_R) \, \phi_0(1)  - c \tilde{q}_{k-1}(x_R) \, \phi_0(0) \\
+c \tilde{q}_{k}(x_R) \, \phi_1(1)  - c \tilde{q}_{k-1}(x_R) \, \phi_1(0)
+\end{pmatrix} \\
+&=
+\begin{pmatrix}
+- c \tilde{q}_{k-1}(x_R) \\
+c \tilde{q}_{k}(x_R)
+\end{pmatrix}
 \end{aligned}
 \end{equation}
 
