@@ -96,9 +96,6 @@ and we get a separate copy of (\ref{eq:weak_form}) for each $j \in [0, M]$:
 &- c \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \psi_i(\xi) \Big[ \frac{\partial \xi}{\partial x} \partial_\xi \phi_j(\xi) \Big] \, \frac{\partial x}{\partial \xi} d \xi \\
 &= \partial_t \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \phi_j(\xi) \psi_i(\xi) \, J \, d\xi + \Big[ f(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \\
 &- c \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \psi_i(\xi) \partial_\xi \phi_j(\xi) \, d \xi, \\
-%&= \partial_t \sum_{i=0}^{M} a_i(t) \int_k \psi_j \psi_i \, dx + \big[ f(\tilde{q}) \phi_j \big]^{x_R}_{x_L} - c \sum_{i=0}^{M} a_i(t) \int_k \psi_i \partial_x \psi_j \, dx \\
-%&\equiv \bm{M} \cdot \partial_t \bm{a} + \bm{f} - c \bm{a} \cdot \bm{K} \\
-%\implies \partial_t \bm{a} &= \bm{M}^{-1} \cdot \Big( c \bm{a} \cdot \bm{K} - \bm{f} \Big)
 \end{aligned}
 \end{equation}
 where we have defined the \textit{jacobian of the coordinate transformation}
@@ -118,13 +115,23 @@ f_j    &\equiv \Big[ f(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} 
 which are known as the \textit{mass matrix}, \textit{stiffness matrix}, and \textit{flux (boundary) term}, respectively. 
 Notice that we have inserted a \textit{numerical flux function}, $\hat{f}$, in for the continuum flux; the choice of this function will determine how well our numerical scheme can handle discontinuous solutions.
 
+Using these definitions we can write (\ref{eq:weak_form_approx}) as a discrete approximation to the PDE:
+\begin{equation} \label{eq:discrete_approx}
+\begin{aligned}
+0 &= \sum_{i=0}^{M} \partial_t a_i(t) M_{ij} + \Big[ \hat{f}(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} - c \sum_{i=0}^{M} a_i(t) K_{ij} \\
+&= \bm{M} \cdot \partial_t \bm{a} + \bm{f} - c \bm{K} \cdot \bm{a} \\
+\implies \partial_t \bm{a} &= \bm{M}^{-1} \Big( c \bm{K} \cdot \bm{a} - \bm{f} \Big), \\
+\end{aligned}
+\end{equation}
+which gives the time evolution of the coefficient vector $a_j(t) = \bm{a}$.
 Given a choice for the numerical flux function $f(\tilde{q})$, the basis functions $\psi(\xi), \phi(\xi)$, and the coordinate map $\xi(x)$, we can construct a discrete approximation to the PDE.
 
-\clearpage
+%\clearpage
 
-\subsection{Ramp function case}
+\subsection{Simple example: $M=1$, $\psi_i$ polynomials}
 
-We will now restrict to $M = 1$ with
+We will now restrict to $M = 1$ with $\psi_i$ chosen to be polynomials.
+Specifically, we choose $\hat{\psi}_0 = 1, \hat{\psi}_1 = \xi$, and then change to a linear combination of these basis vectors (for simplicity later on) where:
 \begin{equation}
 \psi_0 = 1 - \xi, ~~~ \psi_1 = \xi,
 \end{equation}
