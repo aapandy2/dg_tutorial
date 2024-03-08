@@ -1,0 +1,260 @@
+%// Distributed under the MIT License.
+%// See LICENSE.txt for details.
+
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{braket}
+\usepackage{bm}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{listings}
+
+\allowdisplaybreaks
+\numberwithin{equation}{section}
+
+\interfootnotelinepenalty=10000
+
+\usepackage{calligra}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=violet}
+
+\DeclareMathAlphabet{\mathcalligra}{T1}{calligra}{m}{n}
+\DeclareFontShape{T1}{calligra}{m}{n}{<->s*[2.2]callig15}{}
+\newcommand{\scriptr}{\mathcalligra{r}\,}
+\newcommand{\boldscriptr}{\pmb{\mathcalligra{r}}\,}
+
+\newcommand{\Lagr}{\mathcal{L}}
+\newcommand{\Hami}{\mathcal{H}}
+\newcommand{\reals}{\rm I\!R}
+\newcommand{\order}{\mathcal{O}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bp}{\mathbf{p}}
+\newcommand{\bq}{\mathbf{q}}
+\newcommand{\redtext}[1]{\textcolor{red}{#1}}
+\newcommand{\pvec}[1]{\vec{#1}\mkern2mu\vphantom{#1}}
+\newcommand{\mA}{\mathcal{A}}
+
+%\setcounter{section}{-1}
+
+\begin{document}
+\title{DG Tutorial}
+\author{Alex Pandya}
+\date{\today}
+\maketitle
+%\tableofcontents
+%\clearpage
+
+\section{DG for the 1D scalar advection equation}
+
+We are interested in solving conservation laws of the form
+\begin{equation}
+\partial_t \bm{q} + \partial_i \bm{f}^i = \bm{S},
+\end{equation}
+but here we will consider the simplest possible case: the 1D scalar advection equation,
+\begin{equation}
+\partial_t q + \partial_x (c q) = 0.
+\end{equation}
+
+In order to derive the DG discretization, we multiply through by a smooth, compactly supported test function $\phi$ and integrate over the solution domain.
+To simplify things later on, we'll divide the (1D) domain into $k$ cells of extent $\Omega_k \equiv x \in [x_L, x_R]$:
+\begin{equation} \label{eq:weak_form}
+\begin{aligned}
+0 &= \int_{\Omega_k} \phi \, \partial_t q \, dx + \int_{\Omega_k} \phi \, \partial_x (c q) \, dx \\
+&= \int_{x_L}^{x_R} \phi \, \partial_t q \, dx + \big[ c q \phi \big]^{x_R}_{x_L} - \int_{x_L}^{x_R} (c q) \, \partial_x \phi \, dx. \\
+\end{aligned}
+\end{equation}
+Note that a weak solution satisfies the above integral equation \textit{for all admissible $\phi$,} and the global solution satisfies it for all cells $k$.
+
+
+We now express the spatial dependence of the solution $q$ in terms of basis functions $\psi(\xi)$ from a complete vector space $V$:
+\begin{equation}
+q(t,x) = \sum_{i=0}^{\infty} a_i(t) \, \psi_i\big[ \xi(x) \big],
+\end{equation}
+where we have allowed the basis functions $\psi_i$ to be functions of a different coordinate $\xi$ which is a function of $x$.
+
+We now approximate the solution by taking only the first $M$ basis functions:
+\begin{equation}
+\tilde{q}(t,x) = \sum_{i=0}^{M} a_i(t) \, \psi_i\big[ \xi(x) \big].
+\end{equation}
+
+Given that the weak form of the conservation law (\ref{eq:weak_form}) must be satisfied \textit{for all $\phi$}, we can express $\phi$ in terms of the same basis functions $\psi_i$, and since $V$ is complete, we can express any arbitrary $\phi$ as a linear combination of the $\psi_i$.  The second DG approximation comes in that we take only the first $M$ basis functions for $\phi$ as well, so we define
+\begin{equation}
+\phi_i \equiv \psi_i
+\end{equation}
+and we get a separate copy of (\ref{eq:weak_form}) for each $j \in [0, M]$:
+\begin{equation} \label{eq:weak_form_approx}
+\begin{aligned}
+0 &= \int_{x_L}^{x_R} \phi_j \, \partial_t \tilde{q} \, dx + \big[ f(\tilde{q}) \, \phi_j \big]^{x_R}_{x_L} - \int_{x_L}^{x_R} (c \tilde{q}) \, \partial_x \phi_j \, dx \\
+&= \partial_t \sum_{i=0}^{M} a_i(t) \int_{x_L}^{x_R} \phi_j\big[ \xi(x) \big] \psi_i\big[ \xi(x) \big] \, dx + \Big[ f(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \\
+&- c \sum_{i=0}^{M} a_i(t) \int_{x_L}^{x_R} \psi_i\big[ \xi(x) \big] \partial_x \phi_j\big[ \xi(x) \big] \, dx \\
+&= \partial_t \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \phi_j(\xi) \psi_i(\xi) \, \frac{\partial x}{\partial \xi} \, d\xi + \Big[ f(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \\
+&- c \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \psi_i(\xi) \Big[ \frac{\partial \xi}{\partial x} \partial_\xi \phi_j(\xi) \Big] \, \frac{\partial x}{\partial \xi} d \xi \\
+&= \partial_t \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \phi_j(\xi) \psi_i(\xi) \, J \, d\xi + \Big[ f(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \\
+&- c \sum_{i=0}^{M} a_i(t) \int_{\xi(x_L)}^{\xi(x_R)} \psi_i(\xi) \partial_\xi \phi_j(\xi) \, d \xi, \\
+%&= \partial_t \sum_{i=0}^{M} a_i(t) \int_k \psi_j \psi_i \, dx + \big[ f(\tilde{q}) \phi_j \big]^{x_R}_{x_L} - c \sum_{i=0}^{M} a_i(t) \int_k \psi_i \partial_x \psi_j \, dx \\
+%&\equiv \bm{M} \cdot \partial_t \bm{a} + \bm{f} - c \bm{a} \cdot \bm{K} \\
+%\implies \partial_t \bm{a} &= \bm{M}^{-1} \cdot \Big( c \bm{a} \cdot \bm{K} - \bm{f} \Big)
+\end{aligned}
+\end{equation}
+where we have defined the \textit{jacobian of the coordinate transformation}
+\begin{equation}
+J \equiv \frac{\partial x}{\partial \xi}.
+\end{equation}
+Notice that the factor of the jacobian cancels from the last term above, because the spatial derivative introduces a factor of $J^{-1}$ to cancel it.
+
+We now define
+\begin{equation}
+\begin{aligned}
+M_{ij} &\equiv \int_{\xi(x_L)}^{\xi(x_R)} \phi_j(\xi) \psi_i(\xi) \, J \, d\xi \\
+K_{ij} &\equiv \int_{\xi(x_L)}^{\xi(x_R)} \psi_i(\xi) \partial_\xi \phi_j(\xi) \, d \xi \\
+f_j    &\equiv \Big[ f(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \approx \Big[ \hat{f}(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L}
+\end{aligned}
+\end{equation}
+which are known as the \textit{mass matrix}, \textit{stiffness matrix}, and \textit{flux (boundary) term}, respectively. 
+Notice that we have inserted a \textit{numerical flux function}, $\hat{f}$, in for the continuum flux; the choice of this function will determine how well our numerical scheme can handle discontinuous solutions.
+
+Given a choice for the numerical flux function $f(\tilde{q})$, the basis functions $\psi(\xi), \phi(\xi)$, and the coordinate map $\xi(x)$, we can construct a discrete approximation to the PDE.
+
+\clearpage
+
+\subsection{Ramp function case}
+
+We will now restrict to $M = 1$ with
+\begin{equation}
+\psi_0 = 1 - \xi, ~~~ \psi_1 = \xi,
+\end{equation}
+defined on $\xi \in [0,1]$.
+We'll take our spatial domain to be $x \in [0, 1]$ as well, but we'll divide the domain into $K$ cells so that each cell has extent $[x_L, x_R] = [k (\Delta x), (k+1) (\Delta x)]$ and $k$ is an integer with $k \in [0,K]$.
+Hence in the $k$th cell our coordinate map is
+\begin{equation}
+x(\xi) = x_L + \xi (x_R - x_L) = k (\Delta x) + \xi (\Delta x),
+\end{equation}
+and the Jacobian is
+\begin{equation}
+J \equiv \frac{\partial x}{\partial \xi} = \Delta x,
+\end{equation}
+which is constant within a given simulation (assuming no grid refinement).
+
+We can now compute the mass matrix, which is
+\begin{equation}
+M_{ij} = \Delta x \int_0^1 \phi_j(\xi) \psi_i(\xi) \, d\xi = \frac{\Delta x}{6}
+\begin{pmatrix}
+2 & 1 \\
+1 & 2
+\end{pmatrix}.
+\end{equation}
+The stiffness matrix is
+\begin{equation}
+K_{ij} = \int_0^1 \psi_i(\xi) \big[ \partial_\xi \phi_j(\xi) \big] \, d\xi = \frac{1}{2}
+\begin{pmatrix}
+-1 & 1 \\
+-1 & 1
+\end{pmatrix}.
+\end{equation}
+To evaluate the flux term, we have to specify the numerical flux function.
+Here we will take the upwind flux, which in the $k$th cell takes the form
+\begin{equation}
+\hat{f}\big[ \tilde{q}_{k}(x_L) \big] =
+\begin{pmatrix}
+c \tilde{q}_{k-1}(x_R) & c > 0 \\
+c \tilde{q}_{k}(x_L)   & c < 0,
+\end{pmatrix}, ~~~
+\hat{f}\big[ \tilde{q}_{k}(x_R) \big] =
+\begin{pmatrix}
+c \tilde{q}_{k}(x_R) & c > 0 \\
+c \tilde{q}_{k+1}(x_L)   & c < 0,
+\end{pmatrix}
+\end{equation}
+or in other words, if the flow has positive speed (i.e., the flux is to the right), then we use the \textit{upwind value} at the left interface, that is, the flux leaving the cell to the left.
+Hence the flux term is (here we will take $c > 0$):
+\begin{equation}
+\begin{aligned}
+f_j &= \Big[ \hat{f}(\tilde{q}) \, \phi_j\big[ \xi(x) \big] \Big]^{x_R}_{x_L} \\
+&= \hat{f}\big[ \tilde{q}(x_R) \big] \, \phi_j\big[ \xi(x_R) \big]  - \hat{f}\big[ \tilde{q}(x_L) \big] \, \phi_j\big[ \xi(x_L) \big] \\
+&= c \tilde{q}_{k}(x_R) \, \phi_j\big[ \xi(x_R) \big]  - c \tilde{q}_{k-1}(x_R) \, \phi_j\big[ \xi(x_L) \big]. \\
+\end{aligned}
+\end{equation}
+
+
+
+
+
+\clearpage
+\begin{equation}
+M_{ij} = \int_0^1 \psi_i \psi_j \, d \xi = \frac{1}{6}
+\begin{pmatrix}
+2 & 1 \\
+1 & 2
+\end{pmatrix}
+\end{equation}
+and
+\begin{equation}
+K_{ij} = \int_0^1 \psi_i (\partial_x \psi_j) \, dx = \frac{1}{2}
+\begin{pmatrix}
+-1 & 1 \\
+-1 & 1
+\end{pmatrix}
+\end{equation}
+and finally
+\begin{equation}
+\begin{aligned}
+\bm{f} &= \big[ f(\tilde{q}) \phi_j \big]^{x_R}_{x_L} \\
+&=  c \tilde{q}_{k}(x_R) \phi_j(x_R) - c \tilde{q}_{k-1}(x_R) \phi_j(x_L) \\
+&=  c [a_{k,0} \psi_0(x_R) + a_{k,1} \psi_1(x_R)] \phi_j(x_R) - c [a_{k-1,0} \psi_0(x_R) + a_{k-1,1} \psi_1(x_R)] \phi_j(x_L) \\
+&=  c a_{k,1} \phi_j(x_R) - c a_{k-1,1} \phi_j(x_L) \\
+&=
+\begin{pmatrix}
+- c a_{k-1,1} \\
+c a_{k,1} \\
+\end{pmatrix},
+\end{aligned}
+\end{equation}
+where we have used the upwind flux function,
+\begin{equation}
+f(x) =
+\begin{cases}
+c q_{k-1} & c > 0 \\
+c q_{k}   & c \leq 0.
+\end{cases}
+\end{equation}
+
+Hence we'll need
+\begin{equation}
+\begin{aligned}
+M^{-1} &=
+\begin{pmatrix}
+4  & -2 \\
+-2 & 4
+\end{pmatrix} \\
+c \bm{a} \cdot \bm{K} &=
+\begin{pmatrix}
+\frac{c}{2} (a_1 - a_0) \\
+\frac{c}{2} (a_1 - a_0) \\
+\end{pmatrix} \\
+c \bm{a} \cdot \bm{K} - \bm{f} &= 
+\begin{pmatrix}
+\frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k-1,1} \\
+\frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k,1}
+\end{pmatrix}
+\end{aligned}
+\end{equation}
+so we get
+\begin{equation}
+\partial_t 
+\begin{pmatrix}
+a_{k,0} \\
+a_{k,1}
+\end{pmatrix}
+=
+\begin{pmatrix}
+4 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k-1,1} \Big] - 2 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k,1} \Big] \\
+-2 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k-1,1} \Big] + 4 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k,1} \Big]
+\end{pmatrix}
+\end{equation}
+
+\end{document}
