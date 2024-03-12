@@ -197,81 +197,26 @@ c \tilde{q}_{k}(x_R)
 \end{aligned}
 \end{equation}
 
+\subsection{Less simple example: Legendre polynomials}
+
+One is likely interested in a higher-order solution approximation within a cell than the linear one given in the previous section.
+It turns out that naively using higher order monomials --- that is, a basis of the form 
+\begin{equation}
+\tilde{q} \sim \sum_{i=0}^M a_i x^i
+\end{equation}
+--- is unstable to Runge's phenomenon for $n$ larger than a few\footnote{talk about the ill-conditioned mass matrix? or just link out the description} (which is why we used $M=1$ in the previous example).
+The basis of monomials is also not orthogonal; if they were, the mass matrix would be diagonal, which is clearly a beneficial property to have since we have to invert the mass matrix to obtain our solution.
+
+For this reason, one typically instead uses the \textit{Lagrange basis}, taking for our basis functions
+\begin{equation}
+\ell_{q}(x) = \prod_{i=0, i \neq j}^{M} \frac{x - x_i}{x_j - x_i}.
+\end{equation}
+Note that by construction $\ell_q(x)$ has roots at the points $x_i$.
+We can then use the functions $\ell_{q}(x)$ to construct an approximation to a function $f(x)$ given a set of $x$ values $x_i$ and their corresponding $y$ values $y_i = f(x_i)$:
+\begin{equation}
+L(x) = \sum_{i=0}^{M} a_i \ell_i(x).
+\end{equation}
 
 
-
-
-\clearpage
-\begin{equation}
-M_{ij} = \int_0^1 \psi_i \psi_j \, d \xi = \frac{1}{6}
-\begin{pmatrix}
-2 & 1 \\
-1 & 2
-\end{pmatrix}
-\end{equation}
-and
-\begin{equation}
-K_{ij} = \int_0^1 \psi_i (\partial_x \psi_j) \, dx = \frac{1}{2}
-\begin{pmatrix}
--1 & 1 \\
--1 & 1
-\end{pmatrix}
-\end{equation}
-and finally
-\begin{equation}
-\begin{aligned}
-\bm{f} &= \big[ f(\tilde{q}) \phi_j \big]^{x_R}_{x_L} \\
-&=  c \tilde{q}_{k}(x_R) \phi_j(x_R) - c \tilde{q}_{k-1}(x_R) \phi_j(x_L) \\
-&=  c [a_{k,0} \psi_0(x_R) + a_{k,1} \psi_1(x_R)] \phi_j(x_R) - c [a_{k-1,0} \psi_0(x_R) + a_{k-1,1} \psi_1(x_R)] \phi_j(x_L) \\
-&=  c a_{k,1} \phi_j(x_R) - c a_{k-1,1} \phi_j(x_L) \\
-&=
-\begin{pmatrix}
-- c a_{k-1,1} \\
-c a_{k,1} \\
-\end{pmatrix},
-\end{aligned}
-\end{equation}
-where we have used the upwind flux function,
-\begin{equation}
-f(x) =
-\begin{cases}
-c q_{k-1} & c > 0 \\
-c q_{k}   & c \leq 0.
-\end{cases}
-\end{equation}
-
-Hence we'll need
-\begin{equation}
-\begin{aligned}
-M^{-1} &=
-\begin{pmatrix}
-4  & -2 \\
--2 & 4
-\end{pmatrix} \\
-c \bm{a} \cdot \bm{K} &=
-\begin{pmatrix}
-\frac{c}{2} (a_1 - a_0) \\
-\frac{c}{2} (a_1 - a_0) \\
-\end{pmatrix} \\
-c \bm{a} \cdot \bm{K} - \bm{f} &= 
-\begin{pmatrix}
-\frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k-1,1} \\
-\frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k,1}
-\end{pmatrix}
-\end{aligned}
-\end{equation}
-so we get
-\begin{equation}
-\partial_t 
-\begin{pmatrix}
-a_{k,0} \\
-a_{k,1}
-\end{pmatrix}
-=
-\begin{pmatrix}
-4 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k-1,1} \Big] - 2 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k,1} \Big] \\
--2 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k-1,1} \Big] + 4 \Big[ \frac{c}{2} (a_{k,1} - a_{k,0}) - c a_{k,1} \Big]
-\end{pmatrix}
-\end{equation}
 
 \end{document}
