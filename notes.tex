@@ -209,12 +209,12 @@ The basis of monomials is also not orthogonal; if they were, the mass matrix wou
 
 For this reason, one typically instead uses the \textit{Lagrange basis}, taking for our basis functions
 \begin{equation}
-\ell_{q}(x) = \prod_{i=0, i \neq j}^{M} \frac{x - x_i}{x_j - x_i}.
+\psi_j(x) = \prod_{i=0, i \neq j}^{M} \frac{x - x_i}{x_j - x_i}.
 \end{equation}
-Note that by construction $\ell_q(x)$ has roots at the points $x_i$.
-We can then use the functions $\ell_{q}(x)$ to construct an approximation to a function $f(x)$ given a set of $x$ values $x_i$ and their corresponding $y$ values $y_i = f(x_i)$:
+Note that by construction $\ell_j(x)$ has roots at the points $x_i$ so long as $i \neq j$.
+Our solution approximation is then
 \begin{equation}
-L_M(x) = \sum_{i=0}^{M} a_i \ell_i(x).
+\tilde{q}(t, x) = \sum_{i=0}^{M} a_i(t) \psi_i(x).
 \end{equation}
 
 In this section, we will construct a DG scheme whose approximate PDE solution, $\tilde{q}(x)$, is given by a Lagrange interpolating polynomial $L_M(x)$ in each cell.
@@ -228,6 +228,15 @@ x(\xi) = x_L + \frac{(1+\xi)}{2} (x_R - x_L) = k \, \Delta x + \frac{(1+\xi)}{2}
 so the Jacobian is
 \begin{equation}
 J \equiv \frac{\partial x}{\partial \xi} = \frac{\Delta x}{2}.
+\end{equation}
+
+We will now assemble the mass matrix.
+It is
+\begin{equation}
+\begin{aligned}
+M_{ij} &= \int_{\xi(x_L)}^{\xi(x_R)} \psi_j(\xi) \psi_i (\xi) J d\xi \\
+&= \frac{\Delta x}{2} \int_{-1}^{1} \psi_j(\xi) \psi_i (\xi) d\xi \\
+\end{aligned}
 \end{equation}
 
 \end{document}
