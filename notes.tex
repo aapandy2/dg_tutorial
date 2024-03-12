@@ -214,9 +214,20 @@ For this reason, one typically instead uses the \textit{Lagrange basis}, taking 
 Note that by construction $\ell_q(x)$ has roots at the points $x_i$.
 We can then use the functions $\ell_{q}(x)$ to construct an approximation to a function $f(x)$ given a set of $x$ values $x_i$ and their corresponding $y$ values $y_i = f(x_i)$:
 \begin{equation}
-L(x) = \sum_{i=0}^{M} a_i \ell_i(x).
+L_M(x) = \sum_{i=0}^{M} a_i \ell_i(x).
 \end{equation}
 
+In this section, we will construct a DG scheme whose approximate PDE solution, $\tilde{q}(x)$, is given by a Lagrange interpolating polynomial $L_M(x)$ in each cell.
 
+In order to do this, we must choose the set of points $x_i$ where we want the interpolating polynomial to be ``exact''.
+As we will show in the jupyter notebook, a good choice is the set of roots of the Legendre polynomials.
+The Legendre polynomials $P_m(x)$ are defined on $\xi \in [-1, 1]$, so will define our coordinate mapping to be (where $x_L = k \Delta x$ is the left side of the $k$th cell, and $x_R = (k+1) \Delta x$ is the right side):
+\begin{equation}
+x(\xi) = x_L + \frac{(1+\xi)}{2} (x_R - x_L) = k \, \Delta x + \frac{(1+\xi)}{2} \, \Delta x
+\end{equation}
+so the Jacobian is
+\begin{equation}
+J \equiv \frac{\partial x}{\partial \xi} = \frac{\Delta x}{2}.
+\end{equation}
 
 \end{document}
